@@ -1,5 +1,7 @@
 // 阅读宝中转客户端（协议 V2.6）— Node 移植版
 // 加密：随机会话密钥 + 时间戳 XOR + MD5 重排 KDF + RSA 封装
+// 节点用 IP 直连，证书不匹配，进程内关闭校验（等价 Python verify=False）
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const crypto = require('crypto');
 const NodeRSA = null; // 用原生 crypto，避免额外依赖
 
