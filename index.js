@@ -26,6 +26,8 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true, database: process.env.DATABASE_URL ? 'configured' : 'none' });
 });
 
-app.listen(PORT, '127.0.0.1', () => {
+// Listen on 0.0.0.0 so the platform's health check can reach the app from
+// outside the container network namespace (127.0.0.1 is loopback-only).
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Express server running on port ${PORT}`);
 });
