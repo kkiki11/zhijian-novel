@@ -1,0 +1,13 @@
+# Managed by uppbuilder -- version history of your app.
+node_modules/
+.next/
+.env
+.env.*
+.pixi/
+pixi.toml
+pixi.lock
+.vibe/
+*.log
+next-env.d.ts
+*.tsbuildinfo
+.DS_Store
