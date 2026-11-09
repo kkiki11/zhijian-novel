@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN" data-type="software">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>纸间 · 后台管理</title>
+<meta name="theme-color" content="#F5EFE6">
+<link rel="stylesheet" href="/novel/style.css?v=6">
+<style>
+  .admin { min-height: 100vh; padding-bottom: 40px; }
+  .admin__header { background: var(--vermilion); color: #fff; padding: var(--sp-4); position: sticky; top: 0; z-index: 10; padding-top: max(var(--sp-4), env(safe-area-inset-top)); }
+  .admin__title { font-family: var(--font-serif); font-size: 20px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+  .admin__user { font-size: 13px; opacity: 0.9; }
+  .admin__body { padding: var(--sp-4); }
+  .card { background: #fff; border-radius: var(--r-card); padding: var(--sp-4); margin-bottom: var(--sp-4); box-shadow: var(--shadow); }
+  .card__title { font-family: var(--font-serif); font-size: 16px; font-weight: 700; margin-bottom: var(--sp-3); color: var(--ink); }
+  .form-grid { display: grid; gap: var(--sp-3); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+  .btn--sm { height: 40px; font-size: 14px; }
+  .novel-list { display: flex; flex-direction: column; gap: var(--sp-2); }
+  .novel-item { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-2); border-radius: var(--r-btn); background: var(--paper); }
+  .novel-item__info { flex: 1; min-width: 0; }
+  .novel-item__title { font-family: var(--font-serif); font-weight: 600; font-size: 14px; color: var(--ink); }
+  .novel-item__meta { font-size: 12px; color: var(--muted); }
+  .novel-item__delete { background: #FDECEC; color: var(--vermilion-deep); border: 0; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+  .novel-item__delete:hover { background: #F5C6C6; }
+  .msg { padding: var(--sp-3); border-radius: var(--r-btn); font-size: 14px; margin-bottom: var(--sp-3); display: none; }
+  .msg--error { background: #FDECEC; color: var(--vermilion-deep); border: 1px solid #F5C6C6; }
+  .msg--success { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+  .msg.show { display: block; }
+  .empty { text-align: center; padding: var(--sp-6); color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body class="paper-grain">
+<div class="admin">
+  <header class="admin__header">
+    <div class="wrap" style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="admin__title">纸间 · 后台管理</div>
+      <div class="admin__user" id="userInfo">加载中...</div>
+    </div>
+  </header>
+
+  <div class="admin__body wrap">
+    <div id="msg" class="msg"></div>
+
+    <!-- 添加小说 -->
+    <div class="card">
+      <h2 class="card__title">添加小说</h2>
+      <form id="addNovelForm" class="form-grid">
+        <div class="field">
+          <label class="field__label" for="title">书名 *</label>
+          <input class="field__input" id="title" name="title" type="text" required placeholder="例如：长安的荔枝">
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label class="field__label" for="author">作者</label>
+            <input class="field__input" id="author" name="author" type="text" placeholder="马伯庸">
+          </div>
+          <div class="field">
+            <label class="field__label" for="category">分类</label>
+            <select class="field__input" id="category" name="category">
+              <option value="其他">其他</option>
+              <option value="历史">历史</option>
+              <option value="科幻">科幻</option>
+              <option value="文学">文学</option>
+              <option value="言情">言情</option>
+              <option value="悬疑">悬疑</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label class="field__label" for="description">简介</label>
+          <textarea class="field__input" id="description" name="description" rows="3" placeholder="小说简介..."></textarea>
+        </div>
+        <div class="field">
+          <label class="field__label" for="cover_color">封面颜色</label>
+          <input class="field__input" id="cover_color" name="cover_color" type="color" value="#8B7E74" style="height:40px;padding:4px;">
+        </div>
+        <button class="btn btn--primary btn--block btn--sm" type="submit">添加小说</button>
+      </form>
+    </div>
+
+    <!-- 小说列表 -->
+    <div class="card">
+      <h2 class="card__title">小说列表（<span id="novelCount">0</span>）</h2>
+      <div id="novelList" class="novel-list">
+        <div class="empty">加载中...</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:var(--sp-5);">
+      <a href="/" style="color:var(--vermilion);font-size:14px;">← 返回前台</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const msg = document.getElementById('msg');
+function showMsg(text, type = 'success') {
+  msg.className = `msg msg--${type} show`;
+  msg.textContent = text;
+  setTimeout(() => msg.className = 'msg', 3000);
+}
+
+// 检查登录状态
+async function checkAuth() {
+  const res = await fetch('/api/me');
+  const data = await res.json();
+  if (!data.user) {
+    alert('请先登录');
+    window.location.href = '/login';
+    return false;
+  }
+  if (!data.user.isAdmin) {
+    alert('需要管理员权限');
+    window.location.href = '/';
+    return false;
+  }
+  document.getElementById('userInfo').textContent = `管理员 #${data.user.id}`;
+  return true;
+}
+
+// 加载小说列表
+async function loadNovels() {
+  const res = await fetch('/api/novels');
+  const data = await res.json();
+  const list = document.getElementById('novelList');
+  const count = document.getElementById('novelCount');
+  
+  if (!data.novels || data.novels.length === 0) {
+    list.innerHTML = '<div class="empty">暂无小说，先添加一本吧</div>';
+    count.textContent = '0';
+    return;
+  }
+  
+  count.textContent = data.novels.length;
+  list.innerHTML = data.novels.map(n => `
+    <div class="novel-item">
+      <div style="width:32px;height:44px;border-radius:4px;background:${n.cover_color};flex-shrink:0;"></div>
+      <div class="novel-item__info">
+        <div class="novel-item__title">${n.title}</div>
+        <div class="novel-item__meta">${n.author || '佚名'} · ${n.category}</div>
+      </div>
+      <button class="novel-item__delete" onclick="deleteNovel(${n.id}, '${n.title}')">删除</button>
+    </div>
+  `).join('');
+}
+
+// 添加小说
+document.getElementById('addNovelForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData);
+  
+  const res = await fetch('/api/novels', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  const result = await res.json();
+  
+  if (result.ok) {
+    showMsg(`《${result.novel.title}》添加成功`);
+    e.target.reset();
+    document.getElementById('cover_color').value = '#8B7E74';
+    loadNovels();
+  } else {
+    showMsg(result.message || '添加失败', 'error');
+  }
+});
+
+// 删除小说
+async function deleteNovel(id, title) {
+  if (!confirm(`确定删除《${title}》吗？`)) return;
+  const res = await fetch(`/api/novels/${id}`, { method: 'DELETE' });
+  const result = await res.json();
+  if (result.ok) {
+    showMsg(`《${title}》已删除`);
+    loadNovels();
+  } else {
+    showMsg(result.message || '删除失败', 'error');
+  }
+}
+
+// 初始化
+checkAuth().then(ok => { if (ok) loadNovels(); });
+</script>
+</body>
+</html>
