@@ -97,9 +97,16 @@ app.post('/api/logout', (req, res) => {
 });
 
 // ===== 当前用户 =====
-app.get('/api/me', (req, res) => {
+app.get('/api/me', async (req, res) => {
   if (!req.session.userId) return res.json({ ok: true, user: null });
-  res.json({ ok: true, user: { id: req.session.userId, isAdmin: req.session.isAdmin } });
+  try {
+    const result = await pool.query('SELECT id, username, email, is_admin, created_at FROM users WHERE id = $1', [req.session.userId]);
+    if (result.rows.length === 0) return res.json({ ok: true, user: null });
+    const u = result.rows[0];
+    res.json({ ok: true, user: { id: u.id, username: u.username, email: u.email, isAdmin: u.is_admin, createdAt: u.created_at } });
+  } catch (err) {
+    res.json({ ok: true, user: { id: req.session.userId, isAdmin: req.session.isAdmin } });
+  }
 });
 
 // ===== 小说列表（公开）=====
@@ -145,6 +152,7 @@ app.get('/', (req, res) => res.sendFile(path.join(novelDir, 'shelf.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(novelDir, 'login.html')));
 app.get('/register', (req, res) => res.sendFile(path.join(novelDir, 'register.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(novelDir, 'admin.html')));
+app.get('/me', (req, res) => res.sendFile(path.join(novelDir, 'me.html')));
 
 // 健康检查
 app.get('/health', (req, res) => res.status(200).send('OK'));

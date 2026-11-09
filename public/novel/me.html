@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN" data-type="software">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>纸间 · 我的</title>
+<meta name="theme-color" content="#F5EFE6">
+<link rel="stylesheet" href="/novel/style.css?v=8">
+<style>
+  .me { min-height: 100vh; padding-bottom: 80px; }
+  .me__header { background: linear-gradient(135deg, var(--vermilion) 0%, var(--vermilion-deep) 100%); color: #fff; padding: var(--sp-6) var(--sp-4) var(--sp-5); padding-top: max(var(--sp-6), env(safe-area-inset-top)); }
+  .me__avatar { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-family: var(--font-serif); font-size: 28px; font-weight: 700; margin-bottom: var(--sp-3); border: 2px solid rgba(255,255,255,0.3); }
+  .me__name { font-family: var(--font-serif); font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .me__meta { font-size: 13px; opacity: 0.9; }
+  .me__badge { display: inline-block; background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px; }
+  .me__body { padding: var(--sp-4); }
+  .menu-card { background: #fff; border-radius: var(--r-card); box-shadow: var(--shadow); overflow: hidden; margin-bottom: var(--sp-4); }
+  .menu-item { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-4); border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); }
+  .menu-item:last-child { border-bottom: 0; }
+  .menu-item:active { background: var(--paper); }
+  .menu-item__icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .menu-item__text { flex: 1; }
+  .menu-item__title { font-size: 15px; font-weight: 500; }
+  .menu-item__desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .menu-item__arrow { color: var(--muted); }
+  .logout-btn { width: 100%; height: 48px; background: #fff; border: 1px solid #F5C6C6; color: var(--vermilion-deep); border-radius: var(--r-btn); font-size: 15px; font-weight: 600; cursor: pointer; }
+  .logout-btn:active { background: #FDECEC; }
+</style>
+</head>
+<body class="paper-grain">
+<div class="me">
+  <header class="me__header">
+    <div class="me__avatar" id="avatar">?</div>
+    <div class="me__name" id="userName">加载中...</div>
+    <div class="me__meta" id="userMeta"></div>
+  </header>
+
+  <div class="me__body wrap">
+    <div class="menu-card" id="userMenu">
+      <a class="menu-item" href="/">
+        <div class="menu-item__icon" style="background:#FFF3E0;color:#E65100;">📚</div>
+        <div class="menu-item__text">
+          <div class="menu-item__title">我的书架</div>
+          <div class="menu-item__desc">查看收藏的小说</div>
+        </div>
+        <div class="menu-item__arrow">›</div>
+      </a>
+      <a class="menu-item" href="/admin" id="adminLink" style="display:none;">
+        <div class="menu-item__icon" style="background:#E8F5E9;color:#2E7D32;">⚙️</div>
+        <div class="menu-item__text">
+          <div class="menu-item__title">后台管理</div>
+          <div class="menu-item__desc">添加和管理小说</div>
+        </div>
+        <div class="menu-item__arrow">›</div>
+      </a>
+    </div>
+
+    <button class="logout-btn" id="logoutBtn" style="display:none;">退出登录</button>
+  </div>
+</div>
+
+<nav class="tabbar" aria-label="主导航">
+  <div class="tabbar__inner">
+    <a class="tabbar__item" href="/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/>
+      </svg>书架
+    </a>
+    <a class="tabbar__item" href="/me" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/>
+      </svg>我的
+    </a>
+  </div>
+</nav>
+
+<script>
+async function init() {
+  const res = await fetch('/api/me');
+  const data = await res.json();
+  const userName = document.getElementById('userName');
+  const userMeta = document.getElementById('userMeta');
+  const avatar = document.getElementById('avatar');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const adminLink = document.getElementById('adminLink');
+
+  if (!data.user) {
+    // 未登录，跳转到登录页
+    window.location.href = '/login';
+    return;
+  }
+
+  const u = data.user;
+  avatar.textContent = u.username.charAt(0).toUpperCase();
+  userName.textContent = u.username;
+  let meta = `ID: ${u.id}`;
+  if (u.email) meta += ` · ${u.email}`;
+  if (u.isAdmin) meta += '<span class="me__badge">管理员</span>';
+  userMeta.innerHTML = meta;
+  if (u.isAdmin) adminLink.style.display = 'flex';
+
+  logoutBtn.style.display = 'block';
+  logoutBtn.addEventListener('click', async () => {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = '/login';
+  });
+}
+init();
+</script>
+</body>
+</html>
