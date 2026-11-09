@@ -8,13 +8,12 @@
 <meta name="page-type" content="software">
 <meta name="site-kind" content="software">
 <meta name="theme-color" content="#F5EFE6">
-<meta property="og:type" content="website">
-<meta property="og:title" content="纸间 · 登录">
-<meta property="og:description" content="为阅读者而生的中文小说平台。">
-<link rel="stylesheet" href="/novel/style.css?v=5">
+<link rel="stylesheet" href="/novel/style.css?v=6">
 <style>
-  /* 登录页专属微调 */
   .login { position: relative; }
+  .msg { padding: var(--sp-3); border-radius: var(--r-btn); font-size: 14px; margin-bottom: var(--sp-3); display: none; }
+  .msg--error { background: #FDECEC; color: var(--vermilion-deep); border: 1px solid #F5C6C6; }
+  .msg.show { display: block; }
 </style>
 <script>if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('anim')</script>
 </head>
@@ -29,37 +28,22 @@
       <p class="login__tagline">纸上一寸间 · 心有一方天</p>
     </div>
 
-    <!-- 登录表单 -->
-    <form class="login__form rise-2" action="#" method="post" novalidate>
-      <div class="field">
-        <label class="field__label" for="account">手机号 / 邮箱</label>
-        <input
-          class="field__input"
-          id="account"
-          name="account"
-          type="text"
-          inputmode="email"
-          autocomplete="username"
-          placeholder="输入手机号或邮箱"
-          required>
-      </div>
+    <!-- 提示信息 -->
+    <div id="msg" class="msg"></div>
 
+    <!-- 登录表单 -->
+    <form class="login__form rise-2" id="loginForm">
+      <div class="field">
+        <label class="field__label" for="account">用户名 / 邮箱</label>
+        <input class="field__input" id="account" name="account" type="text" placeholder="输入用户名或邮箱" required>
+      </div>
       <div class="field">
         <label class="field__label" for="password">密码</label>
-        <input
-          class="field__input"
-          id="password"
-          name="password"
-          type="password"
-          autocomplete="current-password"
-          placeholder="输入密码"
-          required>
+        <input class="field__input" id="password" name="password" type="password" placeholder="输入密码" required>
       </div>
-
       <button class="btn btn--primary btn--block" type="submit">登 录</button>
-
       <div class="login__row">
-        <a href="#">忘记密码？</a>
+        <span class="muted" style="font-size:13px;">使用阅读宝 / 息壤账号登录</span>
         <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
           <input type="checkbox" name="remember" style="width:16px;height:16px;accent-color:var(--vermilion);">
           记住我
@@ -71,26 +55,49 @@
     <div class="divider rise-3">或使用以下方式登录</div>
     <div class="social-row rise-3">
       <button class="social-btn social-btn--wechat" type="button" aria-label="微信登录">
-        <!-- 微信气泡图标（极简） -->
         <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M9.5 4C5.4 4 2 6.8 2 10.2c0 1.9 1.1 3.7 2.9 4.8l-.7 2.5 2.9-1.5c.8.2 1.6.3 2.4.3h.4a5.5 5.5 0 0 1-.2-1.4c0-3.3 3.2-6 7.2-6h.4C16.7 6 13.4 4 9.5 4z"/>
           <path d="M22 15c0-2.8-2.7-5-6-5s-6 2.2-6 5 2.7 5 6 5c.7 0 1.4-.1 2.1-.3l2.4 1.2-.6-2.1c1.3-.9 2.1-2.3 2.1-3.8z"/>
         </svg>
       </button>
       <button class="social-btn social-btn--qq" type="button" aria-label="QQ 登录">
-        <!-- QQ 企鹅极简 -->
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M12 2c-3.3 0-6 2.6-6 5.8 0 .8.2 1.6.5 2.3-.5.9-.9 2-1.1 3.2-.2 1.3-.1 2.4.2 3.1.2.4.7.4 1-.1.2-.4.4-1 .6-1.6.3 1.6 1.4 3 3 3.8-.7.3-1.2.8-1.2 1.3 0 .7 1.1 1.2 2 1.2s2-.5 2-1.2c0-.2-.1-.4-.3-.6h.6c-.2.2-.3.4-.3.6 0 .7 1.1 1.2 2 1.2s2-.5 2-1.2c0-.5-.5-1-1.2-1.3 1.6-.8 2.7-2.2 3-3.8.2.6.4 1.2.6 1.6.3.5.8.5 1 .1.3-.7.4-1.8.2-3.1-.2-1.2-.6-2.3-1.1-3.2.3-.7.5-1.5.5-2.3C18 4.6 15.3 2 12 2z"/>
         </svg>
       </button>
     </div>
 
-    <!-- 注册入口 -->
-    <p class="login__footer rise-4">
-      还没有账号？<a href="#">立即注册</a>
+    <p class="login__footer rise-4 muted" style="font-size:12px;">
+      登录即代表你已阅读并同意服务条款
     </p>
 
   </div>
 </main>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = document.getElementById('msg');
+  const account = document.getElementById('account').value.trim();
+  const password = document.getElementById('password').value;
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: account, password })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      window.location.href = data.user.isAdmin ? '/admin' : '/';
+    } else {
+      msg.className = 'msg msg--error show';
+      msg.textContent = data.message || '登录失败';
+    }
+  } catch (err) {
+    msg.className = 'msg msg--error show';
+    msg.textContent = '网络错误，请重试';
+  }
+});
+</script>
 </body>
 </html>
