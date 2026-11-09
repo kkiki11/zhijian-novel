@@ -1,4 +1,3 @@
-# Managed by uppbuilder -- version history of your app.
 node_modules/
 .next/
 .env
@@ -11,3 +10,4 @@ pixi.lock
 next-env.d.ts
 *.tsbuildinfo
 .DS_Store
+index.js.bak

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>诊断测试</title>
+<link rel="stylesheet" href="style.css?v=2">
+<style>
+  /* 诊断：强制所有内容立即可见，禁用动画 */
+  .rise, .rise-2, .rise-3, .rise-4 { animation: none !important; opacity: 1 !important; transform: none !important; }
+</style>
+</head>
+<body class="paper-grain">
+<main class="login">
+  <div class="wrap">
+    <div class="login__brand rise">
+      <div class="login__seal" aria-hidden="true">纸</div>
+      <h1 class="login__title">纸间（诊断版）</h1>
+      <p class="login__tagline">如果看到这些字，说明 HTML/CSS 正常</p>
+    </div>
+
+    <form class="login__form rise-2">
+      <div class="field">
+        <label class="field__label" for="test">测试输入</label>
+        <input class="field__input" id="test" type="text" placeholder="占位文字">
+      </div>
+      <button class="btn btn--primary btn--block" type="button">测试按钮</button>
+    </form>
+
+    <p style="margin-top:24px;color:var(--muted);text-align:center;">
+      页面加载时间: <script>document.write(new Date().toLocaleTimeString())</script>
+    </p>
+  </div>
+</main>
+<script>
+  // 3秒后如果还看不到内容，输出诊断信息到 title
+  setTimeout(() => {
+    const brand = document.querySelector('.login__title');
+    if (brand) {
+      const rect = brand.getBoundingClientRect();
+      const style = getComputedStyle(brand);
+      document.title = `诊断: ${rect.width}x${rect.height}, opacity=${style.opacity}, display=${style.display}, color=${style.color}`;
+    }
+  }, 3000);
+</script>
+</body>
+</html>

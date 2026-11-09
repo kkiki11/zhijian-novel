@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN" data-type="software">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>纸间 · 书架 — 我的藏书</title>
+<meta name="description" content="纸间书架，收录你正在读和想读的小说，自动同步阅读进度。">
+<meta name="page-type" content="software">
+<meta name="site-kind" content="software">
+<meta name="theme-color" content="#F5EFE6">
+<meta property="og:type" content="website">
+<meta property="og:title" content="纸间 · 书架">
+<meta property="og:description" content="我的藏书，随时随地继续阅读。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="paper-grain">
+
+<!-- 顶部导航 -->
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="#" aria-label="纸间首页">
+      <span class="brand__seal" aria-hidden="true">纸</span>
+      纸间
+    </a>
+    <button class="icon-btn" type="button" aria-label="搜索">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="20" y1="20" x2="16.5" y2="16.5"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- 顶部标签 -->
+  <div class="wrap">
+    <div class="tabs" role="tablist" aria-label="内容分类">
+      <button class="tab" role="tab" aria-selected="true" type="button">书架</button>
+      <button class="tab" role="tab" aria-selected="false" type="button">发现</button>
+      <button class="tab" role="tab" aria-selected="false" type="button">我的</button>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="wrap">
+
+    <!-- 最近阅读 -->
+    <h2 class="section-label rise">
+      最近阅读
+      <a href="#" class="more">查看全部 →</a>
+    </h2>
+
+    <a class="recent rise-2" href="#">
+      <div class="cover">
+        <!-- 占位封面：墨色调渐变 -->
+        <div style="width:100%;height:100%;background:linear-gradient(135deg,#2B2B2B 0%,#4A4541 60%,#B8893D 100%);display:flex;align-items:center;justify-content:center;color:#F5EFE6;font-family:var(--font-serif);font-weight:700;font-size:22px;letter-spacing:2px;">长安</div>
+      </div>
+      <div class="recent__info">
+        <div>
+          <div class="recent__title">长安的荔枝</div>
+          <div class="recent__author">马伯庸 著</div>
+          <div class="recent__meta">读到 · 第七章 上好荔枝</div>
+        </div>
+        <div>
+          <div class="progress">
+            <div class="progress__bar"><div class="progress__fill" style="width:43%"></div></div>
+            <span class="progress__text">43%</span>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <!-- 全部藏书 -->
+    <h2 class="section-label rise-3">
+      全部藏书
+      <span class="more">共 12 本</span>
+    </h2>
+
+    <div class="shelf-grid">
+
+      <a class="book rise-3" href="#">
+        <div class="book__cover">
+          <div style="position:absolute;inset:0;background:linear-gradient(160deg,#1F3A5F 0%,#3A5F8A 100%);"></div>
+          <span class="book__badge">在读</span>
+        </div>
+        <div class="book__title">三体</div>
+        <div class="book__progress">读至 62%</div>
+      </a>
+
+      <a class="book rise-3" href="#">
+        <div class="book__cover">
+          <div style="position:absolute;inset:0;background:linear-gradient(160deg,#5C2A2A 0%,#8B3A3A 100%);"></div>
+          <span class="book__badge">未读</span>
+        </div>
+        <div class="book__title">活着</div>
+        <div class="book__progress">尚未开始</div>
+      </a>
+
+      <a class="book rise-3" href="#">
+        <div class="book__cover">
+          <div style="position:absolute;inset:0;background:linear-gradient(160deg,#3D5A3D 0%,#6B8E6B 100%);"></div>
+        </div>
+        <div class="book__title">人间草木</div>
+        <div class="book__progress">读至 18%</div>
+      </a>
+
+      <a class="book rise-4" href="#">
+        <div class="book__cover">
+          <div style="position:absolute;inset:0;background:linear-gradient(160deg,#4A3B6B 0%,#7A5F9E 100%);"></div>
+        </div>
+        <div class="book__title">围城</div>
+        <div class="book__progress">已读完</div>
+      </a>
+
+      <a class="book rise-4" href="#">
+        <div class="book__cover">
+          <div style="position:absolute;inset:0;background:linear-gradient(160deg,#8B6914 0%,#C49A3C 100%);"></div>
+          <span class="book__badge">在读</span>
+        </div>
+        <div class="book__title">百年孤独</div>
+        <div class="book__progress">读至 35%</div>
+      </a>
+
+      <a class="book rise-4" href="#">
+        <div class="book__cover">
+          <div style="position:absolute;inset:0;background:linear-gradient(160deg,#2E4A4A 0%,#4A7A7A 100%);"></div>
+        </div>
+        <div class="book__title">平凡的世界</div>
+        <div class="book__progress">读至 8%</div>
+      </a>
+
+    </div>
+
+    <div class="empty rise-4" style="margin-top:var(--sp-6)">
+      <div class="empty__icon" aria-hidden="true">书</div>
+      <p>继续添加喜欢的小说，充实你的纸间书架</p>
+    </div>
+
+  </div>
+</main>
+
+<!-- 底部标签栏 -->
+<nav class="tabbar" aria-label="主导航">
+  <div class="tabbar__inner">
+    <a class="tabbar__item" href="#" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 4h6a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4z"/>
+        <path d="M20 4h-6a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h6z"/>
+      </svg>
+      书架
+    </a>
+    <a class="tabbar__item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M4 4h7v7H4z"/>
+        <path d="M13 4h7v7h-7z"/>
+        <path d="M4 13h7v7H4z"/>
+        <path d="M13 13h7v7h-7z"/>
+      </svg>
+      书城
+    </a>
+    <a class="tabbar__item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M15.5 8.5l-2 5-5 2 2-5z"/>
+      </svg>
+      发现
+    </a>
+    <a class="tabbar__item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/>
+      </svg>
+      我的
+    </a>
+  </div>
+</nav>
+
+</body>
+</html>
