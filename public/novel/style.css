@@ -531,28 +531,3 @@ input { font: inherit; color: inherit; }
   font-weight: 600;
 }
 
-/* ============ 入场动画 ============ */
-/* 用 animation 兜底：完成前 opacity 起始为 0，但用 fill-mode: backwards
-   保证动画结束后回到元素本身的 opacity: 1（不会因 animation 没跑而一直隐藏） */
-@keyframes rise {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.rise, .rise-2, .rise-3, .rise-4 {
-  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-.rise   { animation-delay: 0s; }
-.rise-2 { animation-delay: 0.06s; }
-.rise-3 { animation-delay: 0.12s; }
-.rise-4 { animation-delay: 0.18s; }
-
-@media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
-}
-
-/* 小屏适配 (320px) */
-@media (max-width: 359px) {
-  .shelf-grid { gap: var(--sp-3) var(--sp-2); }
-  .book__title { font-size: 12px; }
-  .login__title { font-size: 28px; letter-spacing: 4px; }
-}
