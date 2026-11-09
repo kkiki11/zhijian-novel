@@ -1,8 +1,8 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
-const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
+const ydb = require('./yuedubao');
 
 const app = express();
 const PORT = Number(process.env.APP_PORT || 8000);
@@ -46,48 +46,34 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// ===== 注册 =====
-app.post('/api/register', async (req, res) => {
-  const { username, email, password } = req.body;
-  if (!username || !password) return res.status(400).json({ ok: false, message: '用户名和密码必填' });
-  if (password.length < 6) return res.status(400).json({ ok: false, message: '密码至少6位' });
-
-  try {
-    const hash = await bcrypt.hash(password, 10);
-    const result = await pool.query(
-      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, is_admin',
-      [username, email || null, hash]
-    );
-    const user = result.rows[0];
-    req.session.userId = user.id;
-    req.session.isAdmin = user.is_admin;
-    res.json({ ok: true, user: { id: user.id, username: user.username, isAdmin: user.is_admin } });
-  } catch (err) {
-    if (err.code === '23505') return res.status(400).json({ ok: false, message: '用户名或邮箱已存在' });
-    console.error(err);
-    res.status(500).json({ ok: false, message: '注册失败' });
-  }
-});
-
-// ===== 登录 =====
+// ===== 登录（走阅读宝接口）=====
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ ok: false, message: '用户名和密码必填' });
+  if (!username || !password) return res.status(400).json({ ok: false, message: '请输入账号和密码' });
 
   try {
-    const result = await pool.query('SELECT * FROM users WHERE username = $1 OR email = $1', [username]);
-    if (result.rows.length === 0) return res.status(401).json({ ok: false, message: '用户名或密码错误' });
+    const r = await ydb.login(username, password);
+    if (!r.token) return res.status(401).json({ ok: false, message: r.msg || '账号或密码错误' });
 
-    const user = result.rows[0];
-    const match = await bcrypt.compare(password, user.password_hash);
-    if (!match) return res.status(401).json({ ok: false, message: '用户名或密码错误' });
+    // 登录态存 session
+    req.session.ydb_token = r.token;
+    req.session.ydb_user = r.user;
+    req.session.userId = r.user.id || username;
+    req.session.isAdmin = true; // 登录用户即可进后台（个人使用）
 
-    req.session.userId = user.id;
-    req.session.isAdmin = user.is_admin;
-    res.json({ ok: true, user: { id: user.id, username: user.username, isAdmin: user.is_admin } });
+    // 顺便落库（记录登录过的用户，可选）
+    try {
+      await pool.query(
+        `INSERT INTO users (username, email, password_hash) VALUES ($1,$2,$3)
+         ON CONFLICT (username) DO UPDATE SET email=EXCLUDED.email`,
+        [username, (r.user.email || r.user.phone || null), 'ydb-token-login']
+      );
+    } catch (e) { /* 落库失败不阻塞登录 */ }
+
+    res.json({ ok: true, user: { id: r.user.id || username, username: username, isAdmin: true } });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ ok: false, message: '登录失败' });
+    console.error('login error:', err.message);
+    res.status(401).json({ ok: false, message: '登录失败: ' + err.message });
   }
 });
 
@@ -150,7 +136,6 @@ app.delete('/api/novels/:id', requireAdmin, async (req, res) => {
 // ===== 页面路由 =====
 app.get('/', (req, res) => res.sendFile(path.join(novelDir, 'shelf.html')));
 app.get('/login', (req, res) => res.sendFile(path.join(novelDir, 'login.html')));
-app.get('/register', (req, res) => res.sendFile(path.join(novelDir, 'register.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(novelDir, 'admin.html')));
 app.get('/me', (req, res) => res.sendFile(path.join(novelDir, 'me.html')));
 
